@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Annotated Bibliography</title>
+  <style>
+    :root {
+      --bg: #f7f7f5;
+      --panel: #ffffff;
+      --text: #1f2328;
+      --muted: #5b6470;
+      --border: #d8dee4;
+      --accent: #234b7d;
+      --tag-bg: #eef3f8;
+      --shadow: 0 8px 24px rgba(0,0,0,0.06);
+      --radius: 14px;
+      --maxw: 1100px;
+      --preview-lines: 3;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .wrap {
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+
+    header {
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      line-height: 1.1;
+      margin: 0 0 8px;
+      font-weight: 700;
+    }
+
+    .subhead {
+      color: var(--muted);
+      max-width: 70ch;
+      margin: 0;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 12px;
+      margin: 20px 0 18px;
+      align-items: end;
+    }
+
+    .control {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control label {
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    input[type="search"], select {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      font: inherit;
+    }
+
+    .tag-groups {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .tag-group {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      box-shadow: var(--shadow);
+      min-height: 84px;
+    }
+
+    .tag-group h2 {
+      font-size: 1rem;
+      margin: 0 0 10px;
+      font-weight: 700;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag-btn {
+      border: 1px solid #cfd8e3;
+      background: var(--tag-bg);
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .tag-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .statusbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .clear-btn {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      padding: 8px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .results {
+      display: grid;
+      gap: 16px;
+    }
+
+    .entry {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .citation {
+      font-size: 1rem;
+      margin: 0 0 10px;
+    }
+
+    .entry-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .tag-chip {
+      background: var(--tag-bg);
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 0.86rem;
+      border: 1px solid #d5dfeb;
+    }
+
+    .annotation {
+      color: var(--text);
+      margin: 0;
+      white-space: pre-wrap;
+    }
+
+    .annotation.preview {
+      display: -webkit-box;
+      -webkit-line-clamp: var(--preview-lines);
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .entry-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .text-btn,
+    .link-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      color: var(--accent);
+      cursor: pointer;
+      font: inherit;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .error, .loading, .empty {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    @media (max-width: 900px) {
+      .controls,
+      .tag-groups {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Annotated Bibliography</h1>
+      <p class="subhead">A live prototype pulling from a public Zotero group library. Search, sort, and browse by tags. Annotations are drawn from the first child note for each source.</p>
+    </header>
+
+    <section class="controls" aria-label="Search and sort controls">
+      <div class="control">
+        <label for="search">Search citations, tags, and annotations</label>
+        <input id="search" type="search" placeholder="Search by author, title, concept, or note text" />
+      </div>
+      <div class="control">
+        <label for="sort">Sort</label>
+        <select id="sort">
+          <option value="date_desc">Newest first</option>
+          <option value="date_asc">Oldest first</option>
+          <option value="title_asc">Title A–Z</option>
+          <option value="creator_asc">Author A–Z</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="tag-mode">Tag view</label>
+        <select id="tag-mode">
+          <option value="families">Tag families</option>
+          <option value="flat">Flat tag list</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="tag-groups" id="tag-groups" aria-label="Tag filters"></section>
+
+    <div class="statusbar">
+      <div id="status">Loading items…</div>
+      <button class="clear-btn" id="clear-filters" type="button">Clear filters</button>
+    </div>
+
+    <main id="results" class="results" aria-live="polite">
+      <div class="loading">Loading bibliography…</div>
+    </main>
+  </div>
+
+  <script>
+    /*
+      SETUP
+      1) Replace GROUP_ID below with your public Zotero group ID.
+      2) Commit this file to a GitHub repo and enable GitHub Pages.
+      3) Embed the resulting page in WordPress with an iframe if desired.
+
+      Notes on assumptions:
+      - The bibliography uses top-level Zotero items as sources.
+      - The public annotation is stored in the first child note.
+      - Tags may be prefixed (topic:, theory:, method:, period:) for family grouping.
+    */
+
+    const GROUP_ID = '6458189';
+    const API_BASE = `https://api.zotero.org/groups/${GROUP_ID}`;
+    const DEFAULT_PER_PAGE = 100;
+
+    const state = {
+      items: [],
+      selectedTags: new Set(),
+      search: '',
+      sort: 'date_desc',
+      tagMode: 'families'
+    };
+
+    const els = {
+      results: document.getElementById('results'),
+      status: document.getElementById('status'),
+      search: document.getElementById('search'),
+      sort: document.getElementById('sort'),
+      tagMode: document.getElementById('tag-mode'),
+      tagGroups: document.getElementById('tag-groups'),
+      clearFilters: document.getElementById('clear-filters')
+    };
+
+    const escapeHtml = (str = '') =>
+      str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+    const stripHtml = (html = '') => {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return (tmp.textContent || tmp.innerText || '').trim();
+    };
+
+    const creatorString = (item) => {
+      const creators = item.data?.creators || [];
+      if (!creators.length) return '';
+      return creators
+        .map(c => c.name || [c.lastName, c.firstName].filter(Boolean).join(', '))
+        .filter(Boolean)
+        .join('; ');
+    };
+
+    const yearString = (item) => {
+      const d = item.data?.date || '';
+      const match = d.match(/\b(\d{4})\b/);
+      return match ? match[1] : d;
+    };
+
+    const citationString = (item) => {
+      const creator = creatorString(item);
+      const title = item.data?.title || 'Untitled';
+      const year = yearString(item);
+      const publication = item.data?.publicationTitle || item.data?.publisher || item.data?.bookTitle || '';
+      return [creator, title, publication, year].filter(Boolean).join('. ') + '.';
+    };
+
+    const itemUrl = (item) => item.links?.alternate?.href || item.data?.url || '';
+
+    const splitTag = (tag) => {
+      const idx = tag.indexOf(':');
+      if (idx === -1) return { family: 'other', value: tag };
+      return {
+        family: tag.slice(0, idx).trim().toLowerCase(),
+        value: tag.slice(idx + 1).trim()
+      };
+    };
+
+    async function fetchJSON(url) {
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) throw new Error(`HTTP ${res.status} while requesting ${url}`);
+      return await res.json();
+    }
+
+    async function fetchTopItems() {
+      const items = [];
+      let start = 0;
+
+      while (true) {
+        const url = `${API_BASE}/items/top?format=json&limit=${DEFAULT_PER_PAGE}&start=${start}`;
+        const page = await fetchJSON(url);
+        items.push(...page);
+        if (page.length < DEFAULT_PER_PAGE) break;
+        start += DEFAULT_PER_PAGE;
+      }
+
+      return items;
+    }
+
+    async function fetchFirstNote(itemKey) {
+      const url = `${API_BASE}/items/${itemKey}/children?format=json`;
+      const children = await fetchJSON(url);
+      const firstNote = children.find(child => child.data?.itemType === 'note');
+      return firstNote ? stripHtml(firstNote.data.note || '') : '';
+    }
+
+    async function loadData() {
+      els.results.innerHTML = '<div class="loading">Loading bibliography…</div>';
+      els.status.textContent = 'Loading items…';
+
+      try {
+        if (GROUP_ID === 'REPLACE_WITH_GROUP_ID') {
+          throw new Error('Replace GROUP_ID in the HTML file with your public Zotero group ID.');
+        }
+
+        const rawItems = await fetchTopItems();
+        const enriched = await Promise.all(rawItems.map(async item => ({
+          ...item,
+          annotation: await fetchFirstNote(item.key),
+          citation: citationString(item),
+          creatorsText: creatorString(item),
+          yearText: yearString(item),
+          tagsText: (item.data?.tags || []).map(t => t.tag),
+          searchBlob: ''
+        })));
+
+        enriched.forEach(item => {
+          item.searchBlob = [
+            item.citation,
+            item.annotation,
+            item.tagsText.join(' '),
+            item.data?.abstractNote || ''
+          ].join(' ').toLowerCase();
+        });
+
+        state.items = enriched;
+        render();
+      } catch (err) {
+        els.status.textContent = 'Could not load bibliography.';
+        els.results.innerHTML = `<div class="error"><strong>Load error:</strong> ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    function getTagGroups(items) {
+      const groups = new Map();
+      const flat = new Set();
+
+      items.forEach(item => {
+        (item.tagsText || []).forEach(tag => {
+          const { family, value } = splitTag(tag);
+          flat.add(tag);
+          if (!groups.has(family)) groups.set(family, new Set());
+          groups.get(family).add(value);
+        });
+      });
+
+      return { groups, flat };
+    }
+
+    function passesTagFilter(item) {
+      if (!state.selectedTags.size) return true;
+      const itemTags = new Set(item.tagsText || []);
+      for (const tag of state.selectedTags) {
+        if (!itemTags.has(tag)) return false;
+      }
+      return true;
+    }
+
+    function getFilteredItems() {
+      const q = state.search.trim().toLowerCase();
+      const filtered = state.items.filter(item => {
+        const matchesSearch = !q || item.searchBlob.includes(q);
+        return matchesSearch && passesTagFilter(item);
+      });
+
+      const sorted = [...filtered].sort((a, b) => {
+        switch (state.sort) {
+          case 'date_asc':
+            return (a.yearText || '').localeCompare(b.yearText || '');
+          case 'title_asc':
+            return (a.data?.title || '').localeCompare(b.data?.title || '');
+          case 'creator_asc':
+            return (a.creatorsText || '').localeCompare(b.creatorsText || '');
+          case 'date_desc':
+          default:
+            return (b.yearText || '').localeCompare(a.yearText || '');
+        }
+      });
+
+      return sorted;
+    }
+
+    function renderTagFilters(items) {
+      const { groups, flat } = getTagGroups(items);
+
+      if (state.tagMode === 'flat') {
+        const tags = [...flat].sort((a, b) => a.localeCompare(b));
+        els.tagGroups.innerHTML = `
+          <div class="tag-group" style="grid-column: 1 / -1;">
+            <h2>Tags</h2>
+            <div class="tag-list">
+              ${tags.map(tag => tagButtonHtml(tag, tag)).join('')}
+            </div>
+          </div>
+        `;
+      } else {
+        const orderedFamilies = [...groups.keys()].sort((a, b) => a.localeCompare(b));
+        els.tagGroups.innerHTML = orderedFamilies.map(family => {
+          const values = [...groups.get(family)].sort((a, b) => a.localeCompare(b));
+          return `
+            <div class="tag-group">
+              <h2>${escapeHtml(capitalize(family))}</h2>
+              <div class="tag-list">
+                ${values.map(v => tagButtonHtml(`${family}:${v}`, v)).join('')}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      els.tagGroups.querySelectorAll('.tag-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tag = btn.dataset.tag;
+          if (state.selectedTags.has(tag)) state.selectedTags.delete(tag);
+          else state.selectedTags.add(tag);
+          render();
+        });
+      });
+    }
+
+    function tagButtonHtml(fullTag, label) {
+      const active = state.selectedTags.has(fullTag) ? ' active' : '';
+      return `<button class="tag-btn${active}" type="button" data-tag="${escapeHtml(fullTag)}">${escapeHtml(label)}</button>`;
+    }
+
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    function renderEntries(items) {
+      if (!items.length) {
+        els.results.innerHTML = '<div class="empty">No entries match the current search or tag filters.</div>';
+        return;
+      }
+
+      els.results.innerHTML = items.map((item, index) => {
+        const annotation = item.annotation || 'No annotation note yet.';
+        const hasLongAnnotation = annotation.length > 280;
+        const url = itemUrl(item);
+        return `
+          <article class="entry">
+            <p class="citation">${escapeHtml(item.citation)}</p>
+            <div class="entry-tags">
+              ${(item.tagsText || []).map(tag => `<span class="tag-chip">${escapeHtml(tag)}</span>`).join('')}
+            </div>
+            <p class="annotation preview" id="annotation-${index}">${escapeHtml(annotation)}</p>
+            <div class="entry-actions">
+              ${hasLongAnnotation ? `<button class="text-btn toggle-annotation" type="button" data-target="annotation-${index}" data-expanded="false">Expand annotation</button>` : ''}
+              ${url ? `<a class="link-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Open source</a>` : ''}
+              ${item.data?.abstractNote ? `<span class="muted">Abstract present in metadata.</span>` : ''}
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      els.results.querySelectorAll('.toggle-annotation').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = document.getElementById(btn.dataset.target);
+          const expanded = btn.dataset.expanded === 'true';
+          target.classList.toggle('preview', expanded);
+          btn.dataset.expanded = String(!expanded);
+          btn.textContent = expanded ? 'Expand annotation' : 'Collapse annotation';
+        });
+      });
+    }
+
+    function render() {
+      const filtered = getFilteredItems();
+      renderTagFilters(state.items);
+      renderEntries(filtered);
+      els.status.textContent = `${filtered.length} of ${state.items.length} entries shown`;
+    }
+
+    els.search.addEventListener('input', (e) => {
+      state.search = e.target.value;
+      render();
+    });
+
+    els.sort.addEventListener('change', (e) => {
+      state.sort = e.target.value;
+      render();
+    });
+
+    els.tagMode.addEventListener('change', (e) => {
+      state.tagMode = e.target.value;
+      render();
+    });
+
+    els.clearFilters.addEventListener('click', () => {
+      state.selectedTags.clear();
+      state.search = '';
+      state.sort = 'date_desc';
+      state.tagMode = 'families';
+      els.search.value = '';
+      els.sort.value = 'date_desc';
+      els.tagMode.value = 'families';
+      render();
+    });
+
+    loadData();
+  </script>
+</body>
+</html>
