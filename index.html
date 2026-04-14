@@ -523,7 +523,8 @@
       }
 
       els.results.innerHTML = items.map((item, index) => {
-        const annotation = item.annotation || 'No annotation note yet.';
+        const annotation = item.annotation || '';
+        <!-- const annotation = item.annotation || 'No annotation note yet.'; -->
         const hasLongAnnotation = annotation.length > 280;
         const url = itemUrl(item);
         return `
